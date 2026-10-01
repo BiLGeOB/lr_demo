@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When we report 100 to a court, is it still 100?</title>
+<style>
+:root{
+  --bone:#EEF0ED; --paper:#F7F8F6; --card:#FFFFFF;
+  --ink:#1B2225; --slate:#59636A; --faint:#8B9298; --rule:#D3D8D1;
+  --specimen:#33685C; --blood:#8C3733; --amber:#9C7328;
+  --mono: ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Consolas,monospace;
+  --body: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --display: "Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --fs:15px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bone);color:var(--ink);font-family:var(--body);
+  font-size:var(--fs);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 26px 40px}
+
+header{border-bottom:1px solid var(--rule);padding-bottom:20px;margin-bottom:22px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:12px;display:flex;justify-content:space-between;gap:20px}
+.eyebrow b{font-weight:400;color:var(--slate)}
+h1{font-family:var(--display);font-weight:400;font-size:33px;line-height:1.15;
+  margin:0 0 10px;letter-spacing:-.01em;max-width:22ch}
+.thesis{color:var(--slate);max-width:64ch;margin:0}
+
+nav{display:flex;gap:2px;margin:0 0 20px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+nav button{font-family:var(--body);font-size:13.5px;color:var(--slate);background:none;
+  border:none;border-bottom:2px solid transparent;padding:11px 15px;cursor:pointer;margin-bottom:-1px}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+nav button:focus-visible{outline:2px solid var(--specimen);outline-offset:-2px}
+
+.panel[hidden]{display:none}
+.lede{color:var(--slate);max-width:68ch;margin:0 0 18px}
+
+/* narrative caption — the spine of the talk */
+.beat{background:var(--ink);color:var(--paper);padding:14px 18px;margin:0 0 18px;
+  display:flex;align-items:baseline;gap:14px;min-height:52px}
+.beat .no{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#8FC9B9;flex:0 0 auto;padding-top:2px}
+.beat .txt{font-size:15.5px;line-height:1.45}
+.beat.idle{background:var(--card);color:var(--slate);border:1px solid var(--rule)}
+.beat.idle .no{color:var(--faint)}
+
+.control{background:var(--card);border:1px solid var(--rule);padding:15px 18px;margin-bottom:18px}
+.control-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:3px}
+.control-head label{font-size:13.5px;font-weight:600}
+.control-val{font-family:var(--mono);font-size:16px;color:var(--specimen)}
+.control-note{font-size:12.5px;color:var(--faint);margin:0 0 10px}
+input[type=range]{width:100%;accent-color:var(--ink);height:22px}
+input[type=range]:focus-visible{outline:2px solid var(--specimen);outline-offset:3px}
+.ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:2px}
+.arms{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.arms button{font-family:var(--body);font-size:12.5px;padding:6px 12px;cursor:pointer;
+  background:var(--paper);border:1px solid var(--rule);color:var(--slate)}
+.arms button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.arms button:focus-visible{outline:2px solid var(--specimen);outline-offset:2px}
+.arms .hint{font-size:12.5px;color:var(--faint)}
+
+.casestrip{display:flex;align-items:center;gap:34px;flex-wrap:wrap;margin-bottom:16px}
+.casestrip .meta{font-family:var(--mono);font-size:11.5px;color:#9AA3A0;line-height:1.7}
+.casestrip .arrow{font-family:var(--mono);font-size:24px;color:#5E6A6B}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.box{background:var(--card);border:1px solid var(--rule);padding:15px 17px}
+.box h3{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);font-weight:400;margin:0 0 11px}
+canvas{display:block;width:100%;height:auto}
+.cap{font-size:12px;color:var(--faint);margin:9px 0 0;line-height:1.45}
+
+.case{background:var(--ink);border:1px solid var(--ink);color:var(--paper)}
+.case h3{color:#9AA3A0}
+.case-meta{font-family:var(--mono);font-size:11.5px;color:#9AA3A0;line-height:1.7;margin-bottom:14px}
+.reading{margin-bottom:12px}
+.reading-lab{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#9AA3A0;margin-bottom:2px}
+.reading-num{font-family:var(--mono);font-size:36px;line-height:1;letter-spacing:-.02em}
+.reading-num.reported{color:#E8A9A4}
+.reading-num.honest{color:#8FC9B9}
+.gapbar{height:4px;background:#2E3639;position:relative;margin:14px 0 8px;overflow:hidden}
+.gapfill{position:absolute;left:0;top:0;bottom:0;background:#8C3733;width:0;transition:width .12s linear}
+.gaptxt{font-family:var(--mono);font-size:11.5px;color:#9AA3A0}
+
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);
+  border:1px solid var(--rule);margin-top:16px}
+.metric{background:var(--card);padding:12px 14px}
+.metric .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
+  margin-bottom:5px;line-height:1.3;min-height:2.4em}
+.metric .v{font-family:var(--mono);font-size:21px;line-height:1;transition:color .15s}
+.metric .v.warn{color:var(--blood)}
+.metric .v.ok{color:var(--specimen)}
+.metric .sub{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:4px}
+.metric.crossed{background:#F7EBEA;box-shadow:inset 3px 0 0 var(--blood)}
+
+.ctlrow{display:grid;grid-template-columns:1fr 250px;gap:18px;align-items:center}
+.anat{background:var(--paper);border:1px solid var(--rule);padding:8px 10px}
+.anat svg{display:block;width:100%;height:auto}
+.anat .cap{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-align:center;margin:4px 0 0}
+.verdict{margin-top:14px}
+.vrow{display:flex;align-items:center;gap:12px;margin-bottom:7px}
+.vlab{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#9AA3A0;flex:0 0 152px;white-space:nowrap}
+.vbar{flex:1;height:16px;background:#2E3639;position:relative;overflow:hidden}
+.vfill{position:absolute;left:0;top:0;bottom:0;transition:width .12s linear}
+.vnum{font-family:var(--mono);font-size:14px;flex:0 0 58px;text-align:right}
+.vnote{font-family:var(--mono);font-size:11px;color:#9AA3A0;margin-top:8px}
+.gridpipe{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.pipe{display:flex;flex-direction:column;gap:6px}
+.step{border:1px solid var(--rule);background:var(--paper);padding:9px 12px;position:relative}
+.step .n{font-size:13.5px;font-weight:600;line-height:1.3}
+.step .d{font-size:12px;color:var(--faint);margin-top:1px}
+.step.knob{cursor:pointer;border-color:var(--slate);background:var(--card)}
+.step.knob:hover{border-color:var(--ink)}
+.step.knob::after{content:"adjustable";position:absolute;right:11px;top:10px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--faint)}
+.step.knob[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
+.step.knob[aria-pressed="true"] .n{color:var(--paper)}
+.step.knob[aria-pressed="true"] .d{color:#9AA3A0}
+.step.knob[aria-pressed="true"]::after{color:#9AA3A0}
+.step.knob:focus-visible{outline:2px solid var(--specimen);outline-offset:2px}
+.rtab{width:100%;border-collapse:collapse;margin-top:10px}
+.rtab th,.rtab td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--rule);
+  font-family:var(--mono);font-size:12.5px}
+.rtab th{font-family:var(--body);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--faint);font-weight:400}
+.rtab td.hi{color:var(--blood)}
+.rtab td.lo{color:var(--specimen)}
+.knobnote{font-size:13px;color:var(--slate);margin:12px 0 0;line-height:1.5}
+.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;color:var(--slate);margin-top:9px}
+.legend span{display:flex;align-items:center;gap:6px}
+.swatch{width:14px;height:3px;display:inline-block}
+.swatch.d{background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 8px)}
+
+.note{border-left:3px solid var(--rule);padding:2px 0 2px 14px;margin:20px 0 0;
+  color:var(--slate);font-size:13.5px;max-width:72ch}
+.note strong{color:var(--ink)}
+
+.keys{margin-top:26px;padding-top:16px;border-top:1px solid var(--rule);
+  font-size:12px;color:var(--faint);display:flex;gap:18px;flex-wrap:wrap}
+.keys kbd{font-family:var(--mono);font-size:11px;background:var(--card);border:1px solid var(--rule);
+  padding:1px 6px;color:var(--slate)}
+footer{margin-top:22px;font-size:12px;color:var(--faint);max-width:76ch}
+
+/* ---- presentation mode ---- */
+body.pres{--fs:20px;background:#F7F8F6}
+body.pres .wrap{max-width:1500px;padding:22px 40px}
+body.pres header,body.pres .lede,body.pres .keys,body.pres footer,
+body.pres .control-note,body.pres .note,body.pres .cap{display:none}
+body.pres nav{margin-bottom:14px}
+body.pres nav button{font-size:16px;padding:10px 18px}
+body.pres .beat{padding:20px 26px;min-height:74px}
+body.pres .beat .txt{font-size:23px}
+body.pres .beat .no{font-size:13px}
+body.pres .control{padding:14px 20px}
+body.pres .control-head label{font-size:17px}
+body.pres .control-val{font-size:21px}
+body.pres .box h3{font-size:13px}
+body.pres .metric .k{font-size:13px}
+body.pres .metric .v{font-size:29px}
+body.pres .metric .sub{font-size:12px}
+body.pres .reading-num{font-size:48px}
+body.pres .reading-lab{font-size:13px}
+body.pres .case-meta{font-size:13px}
+body.pres .legend{font-size:14px}
+body.pres .arms button{font-size:15px;padding:8px 15px}
+body.pres .arms .hint{display:none}
+
+@media (max-width:1000px){
+  .grid3,.grid2,.gridpipe{grid-template-columns:1fr}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  h1{font-size:26px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow"><span>DRD 2026 · Forensic toxicology · Interactive demonstration</span><b id="modeflag">presentation mode: off — P</b></div>
+  <h1>When we report 100 to a court, is it still 100?</h1>
+  <p class="thesis">In postmortem toxicology, evidential weight is reported as a likelihood ratio. The validity of that number rests on two silent assumptions — and some of the results depend on a third thing: the shape of the reference distributions.</p>
+</header>
+
+<nav role="tablist">
+  <button role="tab" id="t1" aria-controls="p1" aria-selected="true">1 · When the case differs from the reference</button>
+  <button role="tab" id="t2" aria-controls="p2" aria-selected="false">2 · When labels depend on the evidence</button>
+  <button role="tab" id="t3" aria-controls="p3" aria-selected="false">3 · Which results are fragile?</button>
+  <button role="tab" id="t4" aria-controls="p4" aria-selected="false">4 · How the design works</button>
+</nav>
+
+<div class="beat idle" id="beat"><span class="no" id="beatNo">FREE</span><span class="txt" id="beatTxt">Drag the control yourself, or press space to step through the narrative.</span></div>
+
+<!-- ================= PANEL 1 ================= -->
+<section class="panel" id="p1" role="tabpanel" aria-labelledby="t1">
+  <p class="lede">The reference distributions were built from femoral blood. But the specimen in hand may have come from cardiac blood, or long after death. That displaces the measurement.</p>
+
+  <div class="control">
+    <div class="control-head">
+      <label for="d">Sampling-site shift</label>
+      <span class="control-val" id="dv">δ = +0.00 SD</span>
+    </div>
+    <p class="control-note">The difference between the reference population and the condition the case came from, in pooled standard deviations.</p>
+    <div class="ctlrow">
+      <div>
+        <input type="range" id="d" min="-1.5" max="1.5" step="0.05" value="0">
+        <div class="ticks"><span>−1.5</span><span>0</span><span>+1.5</span></div>
+      </div>
+      <div class="anat">
+        <svg viewBox="0 0 200 152" xmlns="http://www.w3.org/2000/svg" aria-label="Sampling site schematic">
+          <g fill="none" stroke="#D3D8D1" stroke-width="1.6">
+            <circle cx="100" cy="16" r="8"/>
+            <rect x="78" y="28" width="44" height="62" rx="11"/>
+            <rect x="82" y="90" width="14" height="52" rx="6"/>
+            <rect x="104" y="90" width="14" height="52" rx="6"/>
+            <path d="M78 40 L66 66 M122 40 L134 66"/>
+          </g>
+          <g id="diff" opacity="0" stroke="#8C3733" stroke-width="1.8" fill="none" stroke-linecap="round">
+            <path d="M84 66 L92 54"/><path d="M116 66 L108 54"/>
+            <path d="M86 80 L94 58"/><path d="M114 80 L106 58"/>
+            <path d="M92 54 l-4 0 M92 54 l0 4"/><path d="M108 54 l4 0 M108 54 l0 4"/>
+          </g>
+          <circle id="siteC" cx="100" cy="48" r="7" fill="#F2F3EF" stroke="#8A9196" stroke-width="1.8"/>
+          <path d="M112 44 L138 38" stroke="#D3D8D1" stroke-width="1"/>
+          <text x="140" y="41" font-family="ui-monospace,monospace" font-size="9" fill="#8A9196">cardiac</text>
+          <circle id="siteF" cx="89" cy="104" r="6" fill="#F2F3EF" stroke="#8A9196" stroke-width="1.8"/>
+          <path d="M80 108 L52 116" stroke="#D3D8D1" stroke-width="1"/>
+          <text x="50" y="119" text-anchor="end" font-family="ui-monospace,monospace" font-size="9" fill="#8A9196">femoral</text>
+        </svg>
+        <p class="cap" id="anatCap">specimen femoral — matches the reference</p>
+      </div>
+    </div>
+    <div class="arms">
+      <button id="corr" aria-pressed="false">Account for the shift</button>
+      <span class="hint">transport-aware LR that carries the uncertainty into the model &nbsp;·&nbsp; <kbd>C</kbd></span>
+    </div>
+  </div>
+
+  <div class="box case" style="margin-bottom:16px">
+    <h3>Case record</h3>
+    <div class="casestrip">
+      <div class="meta">NO&nbsp;&nbsp;&nbsp;&nbsp;A-4471<br>MATRIX&nbsp;blood<br>MEASURED&nbsp;<span id="cconc">1.17</span> mg/L</div>
+      <div class="reading" style="margin:0"><div class="reading-lab">Reported LR</div><div class="reading-num reported" id="lrRep">100</div></div>
+      <div class="arrow">→</div>
+      <div class="reading" style="margin:0"><div class="reading-lab">Once the shift is accounted for</div><div class="reading-num honest" id="lrHon">100</div></div>
+      <div style="flex:1;min-width:200px">
+        <div class="gapbar" style="margin:0 0 6px"><div class="gapfill" id="gap"></div></div>
+        <div class="gaptxt" id="gaptxt">Reported figure is correct</div>
+      </div>
+    </div>
+    <div class="verdict">
+      <div class="vrow"><span class="vlab">As reported</span>
+        <span class="vbar"><span class="vfill" id="vRep" style="background:#8C3733"></span></span>
+        <span class="vnum" id="vRepN" style="color:#E8A9A4">99%</span></div>
+      <div class="vrow"><span class="vlab">As honestly assessed</span>
+        <span class="vbar"><span class="vfill" id="vHon" style="background:#33685C"></span></span>
+        <span class="vnum" id="vHonN" style="color:#8FC9B9">99%</span></div>
+      <div class="vnote">What the court would conclude from prior odds of 1:1</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="box">
+      <h3>Reference distributions and the case</h3>
+      <canvas id="c1" width="1300" height="780"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#5C666A"></i>Control (H₀)</span>
+        <span><i class="swatch" style="background:#33685C"></i>Death (H₁)</span>
+        <span><i class="swatch" style="background:#8C3733"></i>Case</span>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Weight claimed, weight deserved</h3>
+      <canvas id="c1b" width="1300" height="780"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#8C3733"></i>When the shift is ignored</span>
+        <span><i class="swatch" style="background:#33685C"></i>When it is accounted for</span>
+      </div>
+      <p class="cap">Horizontal axis: the reported log₁₀ LR. Vertical: what those cases actually deserved. Sitting on the diagonal means correct calibration.</p>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric" id="mb1"><div class="k">C<sub>llr</sub> — 1.0 neutral benchmark</div><div class="v" id="m1">0.65</div><div class="sub" id="m1s">below the benchmark</div></div>
+    <div class="metric"><div class="k">Calibration loss</div><div class="v" id="m2">0.007</div><div class="sub">C<sub>llr</sub><sup>cal</sup></div></div>
+    <div class="metric"><div class="k">Discrimination</div><div class="v" id="m3">0.64</div><div class="sub">C<sub>llr</sub><sup>min</sup></div></div>
+    <div class="metric"><div class="k">LR &gt; 100 given H₀</div><div class="v" id="m4">0.1%</div><div class="sub">strong misleading evidence</div></div>
+  </div>
+
+  <p class="note"><strong>Notice:</strong> discrimination barely changes. Which case looks more suspicious stays the same. The only thing that breaks is the numerical weight attached to that suspicion.</p>
+</section>
+
+<!-- ================= PANEL 2 ================= -->
+<section class="panel" id="p2" role="tabpanel" aria-labelledby="t2" hidden>
+  <p class="lede">The reference groups are separated by the label “the drug caused death”. That label comes from the death certificate — and the person who wrote it had seen the toxicology result. Both arms carry the same label error: 15%.</p>
+
+  <div class="control">
+    <div class="control-head">
+      <label for="g">How strongly the label depends on concentration</label>
+      <span class="control-val" id="gv">γ = 0.0</span>
+    </div>
+    <p class="control-note">How much a high concentration raises the probability of a “drug-caused” label.</p>
+    <input type="range" id="g" min="0" max="4" step="0.1" value="0">
+    <div class="ticks"><span>0</span><span>2</span><span>4</span></div>
+    <div class="arms">
+      <button id="armD" aria-pressed="true">Evidence-dependent error</button>
+      <button id="armN" aria-pressed="false">Random error (control)</button>
+      <span class="hint">press <kbd>C</kbd> to switch</span>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="box">
+      <h3>Performance depends on what you measure against</h3>
+      <canvas id="c2" width="1300" height="760"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#9C7328"></i>Against the recorded labels (apparent)</span>
+        <span><i class="swatch" style="background:#8C3733"></i>Against the truth</span>
+      </div>
+    </div>
+    <div class="box">
+      <h3>The separation the model believes in</h3>
+      <canvas id="c3" width="1300" height="760"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#D3D8D1"></i>True distributions</span>
+        <span><i class="swatch" style="background:#9C7328"></i>Learned from the labels</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="k">Apparent C<sub>llr</sub></div><div class="v" id="n1">0.85</div><div class="sub">against the recorded labels</div></div>
+    <div class="metric"><div class="k">True C<sub>llr</sub></div><div class="v" id="n2">0.71</div><div class="sub">against the latent truth</div></div>
+    <div class="metric" id="nb3"><div class="k">Illusion margin</div><div class="v" id="n3">−0.14</div><div class="sub">true − apparent</div></div>
+    <div class="metric"><div class="k">Believed / true separation</div><div class="v" id="n4">0.93 / 1.53</div><div class="sub">in SD</div></div>
+  </div>
+
+  <p class="note"><strong>When the illusion margin turns positive</strong>, the system starts to look better against the recorded labels than it truly is. Switch to the control arm: the same amount of error, distributed at random, never does this.</p>
+</section>
+
+<!-- ================= PANEL 3 ================= -->
+<section class="panel" id="p3" role="tabpanel" aria-labelledby="t3" hidden>
+  <p class="lede">Not every result is equally robust. Change the variance ratio of the reference distributions: quantities describing order stay put, quantities describing evidential weight swing. Shift held constant at δ = +1 SD.</p>
+
+  <div class="control">
+    <div class="control-head">
+      <label for="r">Variance ratio σ₁ / σ₀</label>
+      <span class="control-val" id="rv">1.00</span>
+    </div>
+    <p class="control-note">How wide the death group is relative to the control group. Pooled SD held constant.</p>
+    <input type="range" id="r" min="0.6" max="1.8" step="0.02" value="1">
+    <div class="ticks"><span>0.6</span><span>1.0</span><span>1.8</span></div>
+  </div>
+
+  <div class="grid2">
+    <div class="box">
+      <h3>Order information — robust</h3>
+      <canvas id="c4" width="1300" height="760"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#5C666A"></i>P(LR&gt;1 | H₀)</span>
+        <span><i class="swatch" style="background:#33685C"></i>Discrimination C<sub>llr</sub><sup>min</sup></span>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Weight information — fragile</h3>
+      <canvas id="c5" width="1300" height="760"></canvas>
+      <div class="legend">
+        <span><i class="swatch" style="background:#8C3733"></i>P(LR&gt;100 | H₀) — prosecution side</span>
+        <span><i class="swatch" style="background:#9C7328"></i>P(LR&lt;1/100 | H₁) — defence side</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="k">P(LR&gt;1 | H₀)</div><div class="v" id="q1">56%</div><div class="sub">order</div></div>
+    <div class="metric"><div class="k">Calibration loss</div><div class="v" id="q2">0.42</div><div class="sub">weight — fragile</div></div>
+    <div class="metric"><div class="k">P(LR&gt;100 | H₀)</div><div class="v" id="q3">2.5%</div><div class="sub">weight — fragile</div></div>
+    <div class="metric"><div class="k">P(LR&lt;1/100 | H₁)</div><div class="v" id="q4">0.0%</div><div class="sub">weight — fragile</div></div>
+  </div>
+
+  <p class="note"><strong>Result:</strong> as the variance ratio moves from 0.6 to 1.8, order information stays put — P(LR&gt;1 | H₀) between 55% and 58%, discrimination between 0.80 and 0.90. Weight information swings: calibration loss from 0.14 to 0.95, strong misleading evidence from 0% to 15%, changing sides on the way. This is a mechanism observation, not a claim that forensic LRs favour one party. But it says which figures are reportable: the ones on the left.</p>
+</section>
+
+
+<section class="panel" id="p4" role="tabpanel" aria-labelledby="t4" hidden>
+  <p class="lede">Every experiment is a repetition of one pipeline. We touch one box, hold the rest fixed, and recompute the same two numbers. Click the adjustable boxes.</p>
+
+  <div class="gridpipe">
+    <div class="box">
+      <h3>One run of the pipeline</h3>
+      <div class="pipe" id="pipe">
+        <div class="step"><div class="n">Reference sample</div><div class="d">past cases, femoral blood</div></div>
+        <div class="step knob" data-k="3" role="button" tabindex="0" aria-pressed="false"><div class="n">How labels were assigned</div><div class="d">the cause-of-death decision</div></div>
+        <div class="step knob" data-k="2" role="button" tabindex="0" aria-pressed="false"><div class="n">Shape of the distributions</div><div class="d">spread ratio of the two groups</div></div>
+        <div class="step"><div class="n">The model is built</div><div class="d">two distributions estimated</div></div>
+        <div class="step knob" data-k="0" role="button" tabindex="0" aria-pressed="true"><div class="n">A shift is added</div><div class="d">difference in sampling condition</div></div>
+        <div class="step knob" data-k="1" role="button" tabindex="0" aria-pressed="false"><div class="n">Does the model know about it</div><div class="d">correction applied, or not</div></div>
+        <div class="step"><div class="n">An LR per case, then a penalty</div><div class="d">because we know the truth</div></div>
+        <div class="step"><div class="n">Average penalty, then split in two</div><div class="d">order share and weight share</div></div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3 id="knobTitle">Shift magnitude</h3>
+      <div id="knobBody"></div>
+      <p class="knobnote" id="knobNote"></p>
+    </div>
+  </div>
+</section>
+
+<div class="keys">
+  <span><kbd>←</kbd><kbd>→</kbd> move the control</span>
+  <span><kbd>space</kbd> next step</span>
+  <span><kbd>⌫</kbd> previous step</span>
+  <span><kbd>C</kbd> correction / switch arm</span>
+  <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> panels</span>
+  <span><kbd>P</kbd> presentation mode</span>
+  <span><kbd>R</kbd> reset</span>
+</div>
+
+<footer>The simulation runs live in the browser; 4000 cases per class, fixed seed. The figures shown are properties of this generative model, not field rates. On the log-concentration scale μ₀=0.00, σ₀=0.60, μ₁=1.00, σ₁=0.70. The mg/L value on the case record is illustrative.</footer>
+</div>
+
+<script>
+"use strict";
+/* ================= deterministic randomness ================= */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function normals(n,seed){const r=mulberry32(seed),o=new Float64Array(n);
+  for(let i=0;i<n;i+=2){const u=Math.max(r(),1e-12),v=r(),m=Math.sqrt(-2*Math.log(u));
+    o[i]=m*Math.cos(2*Math.PI*v); if(i+1<n)o[i+1]=m*Math.sin(2*Math.PI*v);} return o;}
+function uniforms(n,seed){const r=mulberry32(seed),o=new Float64Array(n);
+  for(let i=0;i<n;i++)o[i]=r();return o;}
+
+const MU0=0.0,SD0=0.60,MU1=1.00,SD1=0.70;
+const SP=Math.sqrt((SD0*SD0+SD1*SD1)/2), TRUE_SEP=(MU1-MU0)/SP;
+const N=4000, NREF=4000;
+const zr0=normals(NREF,11),zr1=normals(NREF,22);
+const zt0=normals(N,33),zt1=normals(N,44),zu=normals(2*N,55);
+
+const lnpdf=(x,m,s)=>-0.5*Math.log(2*Math.PI*s*s)-(x-m)*(x-m)/(2*s*s);
+const mean=a=>{let s=0;for(let i=0;i<a.length;i++)s+=a[i];return s/a.length;};
+const sd=(a,m)=>{let s=0;for(let i=0;i<a.length;i++){const d=a[i]-m;s+=d*d;}return Math.sqrt(s/(a.length-1));};
+const LG=Math.log(10);
+
+function cllr(llr,y){let a=0,b=0,na=0,nb=0;
+  for(let i=0;i<llr.length;i++){
+    if(y[i]===1){a+=Math.log2(1+Math.exp(-llr[i]));na++;}
+    else{b+=Math.log2(1+Math.exp(llr[i]));nb++;}}
+  return 0.5*(a/na+b/nb);}
+
+/* PAV: oracle minimum cost + the calibration mapping itself */
+function pav(llr,y){
+  const idx=Array.from(llr.keys()).sort((p,q)=>llr[p]-llr[q]);
+  const n=idx.length,val=new Float64Array(n),wt=new Float64Array(n);
+  let k=0;
+  for(let i=0;i<n;i++){val[k]=y[idx[i]];wt[k]=1;k++;
+    while(k>1&&val[k-2]>=val[k-1]){const w=wt[k-2]+wt[k-1];
+      val[k-2]=(val[k-2]*wt[k-2]+val[k-1]*wt[k-1])/w;wt[k-2]=w;k--;}}
+  const p=new Float64Array(n);let pos=0;
+  for(let b=0;b<k;b++)for(let j=0;j<wt[b];j++)p[pos++]=val[b];
+  const out=new Float64Array(n),yy=new Uint8Array(n),xs=new Float64Array(n);
+  for(let i=0;i<n;i++){const q=Math.min(Math.max(p[i],1e-9),1-1e-9);
+    out[i]=Math.log(q/(1-q));yy[i]=y[idx[i]];xs[i]=llr[idx[i]];}
+  return {cmin:cllr(out,yy),x:xs,y:out};
+}
+
+/* ================= panel 1 ================= */
+let delta=0,useCorr=false,X_CASE=null;
+
+function run1(){
+  const xr0=new Float64Array(NREF),xr1=new Float64Array(NREF);
+  for(let i=0;i<NREF;i++){xr0[i]=MU0+SD0*zr0[i];xr1[i]=MU1+SD1*zr1[i];}
+  const m0=mean(xr0),s0=sd(xr0,m0),m1=mean(xr1),s1=sd(xr1,m1);
+  const mt=delta*SP,st=Math.abs(delta)*SP;
+  const y=new Uint8Array(2*N),xo=new Float64Array(2*N);
+  for(let i=0;i<2*N;i++){
+    const h=i<N?0:1;
+    const base=h===0?MU0+SD0*zt0[i]:MU1+SD1*zt1[i-N];
+    y[i]=h; xo[i]=base+mt+st*zu[i];
+  }
+  const score=(corr)=>{
+    const A1=corr?m1+mt:m1,B1=corr?Math.sqrt(s1*s1+st*st):s1;
+    const A0=corr?m0+mt:m0,B0=corr?Math.sqrt(s0*s0+st*st):s0;
+    const o=new Float64Array(2*N);
+    for(let i=0;i<2*N;i++)o[i]=lnpdf(xo[i],A1,B1)-lnpdf(xo[i],A0,B0);
+    return o;};
+  const llrStd=score(false),llrCor=score(true);
+  const active=useCorr?llrCor:llrStd;
+  const c=cllr(active,y),P=pav(active,y);
+  let strong=0,n0=0;
+  for(let i=0;i<2*N;i++)if(y[i]===0){n0++;if(active[i]>Math.log(100))strong++;}
+  if(X_CASE===null){let lo=0,hi=6;
+    for(let k=0;k<80;k++){const mid=(lo+hi)/2;
+      (lnpdf(mid,m1,s1)-lnpdf(mid,m0,s0)>Math.log(100))?hi=mid:lo=mid;}
+    X_CASE=(lo+hi)/2;}
+  const rep=lnpdf(X_CASE,m1,s1)-lnpdf(X_CASE,m0,s0);
+  const hon=lnpdf(X_CASE,m1+mt,Math.sqrt(s1*s1+st*st))-lnpdf(X_CASE,m0+mt,Math.sqrt(s0*s0+st*st));
+  return {m0,s0,m1,s1,mt,st,c,mn:P.cmin,cal:c-P.cmin,strong:strong/n0,
+    rep:Math.exp(rep),hon:Math.exp(hon),
+    pavStd:pav(llrStd,y),pavCor:pav(llrCor,y)};
+}
+
+const fmtLR=v=>{if(!isFinite(v))return "∞";
+  if(v>=1000)return String(Math.round(v/100)*100);
+  if(v>=10)return v.toFixed(0);
+  if(v>=1)return v.toFixed(1);
+  if(v>=0.01)return v.toFixed(2);
+  return v.toExponential(1);};
+
+function axes(ctx,W,H,L,Rr,T,B){ctx.strokeStyle="#D3D8D1";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(L,H-B);ctx.lineTo(W-Rr,H-B);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(L,T);ctx.lineTo(L,H-B);ctx.stroke();}
+
+function draw1(R){
+  const cv=document.getElementById('c1'),ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,L=54,Rr=18,T=20,B=76;
+  ctx.clearRect(0,0,W,H);
+  const x0=-2.2,x1=4.2,px=x=>L+(x-x0)/(x1-x0)*(W-L-Rr);
+  const f=(x,m,s)=>Math.exp(lnpdf(x,m,s));
+  let ymax=0;for(let i=0;i<=400;i++){const x=x0+(x1-x0)*i/400;
+    ymax=Math.max(ymax,f(x,R.m0,R.s0),f(x,R.m1,R.s1));}
+  ymax*=1.12;const py=v=>H-B-(v/ymax)*(H-T-B);
+  ctx.strokeStyle="#D3D8D1";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(L,H-B);ctx.lineTo(W-Rr,H-B);ctx.stroke();
+  ctx.fillStyle="#8A9196";ctx.font="32px ui-monospace,monospace";ctx.textAlign="center";
+  for(let t=-2;t<=4;t++){ctx.fillText(String(t),px(t),H-34);
+    ctx.strokeStyle="#E6E9E4";ctx.beginPath();ctx.moveTo(px(t),T);ctx.lineTo(px(t),H-B);ctx.stroke();}
+  ctx.fillText("log-concentration",W/2,H-4);
+  const curve=(m,s,col,dash)=>{ctx.strokeStyle=col;ctx.lineWidth=5;ctx.setLineDash(dash||[]);
+    ctx.beginPath();for(let i=0;i<=400;i++){const x=x0+(x1-x0)*i/400;const v=f(x,m,s);
+      i?ctx.lineTo(px(x),py(v)):ctx.moveTo(px(x),py(v));}ctx.stroke();ctx.setLineDash([]);};
+  curve(R.m0,R.s0,"#5C666A");curve(R.m1,R.s1,"#33685C");
+  if(useCorr&&R.st>0){
+    curve(R.m0+R.mt,Math.sqrt(R.s0*R.s0+R.st*R.st),"#5C666A",[10,8]);
+    curve(R.m1+R.mt,Math.sqrt(R.s1*R.s1+R.st*R.st),"#33685C",[10,8]);}
+  ctx.strokeStyle="#8C3733";ctx.lineWidth=5;
+  ctx.beginPath();ctx.moveTo(px(X_CASE),T);ctx.lineTo(px(X_CASE),H-B);ctx.stroke();
+}
+
+function drawDiag(R){
+  const cv=document.getElementById('c1b'),ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,L=96,Rr=22,T=24,B=84;
+  ctx.clearRect(0,0,W,H);
+  const lo=-3,hi=3;
+  const px=v=>L+(v-lo)/(hi-lo)*(W-L-Rr), py=v=>H-B-(v-lo)/(hi-lo)*(H-T-B);
+  axes(ctx,W,H,L,Rr,T,B);
+  ctx.fillStyle="#8A9196";ctx.font="32px ui-monospace,monospace";
+  ctx.textAlign="center";
+  for(let v=-3;v<=3;v+=1.5)ctx.fillText(v.toFixed(1),px(v),H-40);
+  ctx.fillText("raporlanan  log₁₀ LR",W/2,H-4);
+  ctx.textAlign="right";
+  for(let v=-3;v<=3;v+=1.5){ctx.fillText(v.toFixed(1),L-12,py(v)+11);
+    ctx.strokeStyle="#E6E9E4";ctx.beginPath();ctx.moveTo(L,py(v));ctx.lineTo(W-Rr,py(v));ctx.stroke();}
+  ctx.strokeStyle="#AAB1AB";ctx.lineWidth=3;ctx.setLineDash([10,8]);
+  ctx.beginPath();ctx.moveTo(px(lo),py(lo));ctx.lineTo(px(hi),py(hi));ctx.stroke();ctx.setLineDash([]);
+  const step=(P,col,w)=>{ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();let started=false;
+    for(let i=0;i<P.x.length;i+=17){
+      const X=P.x[i]/LG,Y=P.y[i]/LG;
+      if(X<lo||X>hi)continue;
+      const cy=Math.max(lo,Math.min(hi,Y));
+      started?ctx.lineTo(px(X),py(cy)):(ctx.moveTo(px(X),py(cy)),started=true);}
+    ctx.stroke();};
+  step(R.pavStd,"#8C3733",6);
+  if(useCorr)step(R.pavCor,"#33685C",6);
+}
+
+function upd1(){
+  const R=run1();
+  document.getElementById('dv').textContent="δ = "+(delta>=0?"+":"−")+Math.abs(delta).toFixed(2)+" SD";
+  document.getElementById('cconc').textContent=(0.15*Math.exp(X_CASE)).toFixed(2);
+  document.getElementById('lrRep').textContent=fmtLR(R.rep);
+  document.getElementById('lrHon').textContent=fmtLR(R.hon);
+  const ratio=Math.abs(Math.log10(R.rep/R.hon));
+  document.getElementById('gap').style.width=Math.min(100,ratio*50)+"%";
+  const g=document.getElementById('gaptxt');
+  g.textContent = ratio<0.02 ? "Reported figure is correct"
+    : "Reported figure "+fmtLR(R.rep>R.hon?R.rep/R.hon:R.hon/R.rep)+"-fold "+(R.rep>R.hon?"inflated":"understated");
+  // anatomical schematic
+  const ad=Math.abs(delta);
+  document.getElementById('diff').setAttribute('opacity', Math.min(1, ad*0.9).toFixed(2));
+  const sc=document.getElementById('siteC'), sf=document.getElementById('siteF');
+  const on='#8C3733', off='#8A9196';
+  if(ad<0.05){ sc.setAttribute('stroke',off); sc.setAttribute('fill','#F2F3EF');
+    sf.setAttribute('stroke','#33685C'); sf.setAttribute('fill','#33685C');
+    document.getElementById('anatCap').textContent='specimen femoral — matches the reference'; }
+  else { sc.setAttribute('stroke',on); sc.setAttribute('fill',on);
+    sf.setAttribute('stroke',off); sf.setAttribute('fill','#F2F3EF');
+    document.getElementById('anatCap').textContent =
+      (delta>0?'specimen from nearer the trunk':'specimen from a different condition'); }
+
+  // what the court would conclude, from prior odds 1:1
+  const post=v=>v/(1+v);
+  const pr=post(R.rep), ph=post(R.hon);
+  document.getElementById('vRep').style.width=(pr*100).toFixed(1)+'%';
+  document.getElementById('vHon').style.width=(ph*100).toFixed(1)+'%';
+  document.getElementById('vRepN').textContent=(pr*100).toFixed(0)+'%';
+  document.getElementById('vHonN').textContent=(ph*100).toFixed(0)+'%';
+
+  const m1=document.getElementById('m1');
+  m1.textContent=R.c.toFixed(2);
+  m1.className="v"+(R.c>1?" warn":R.c<0.75?" ok":"");
+  document.getElementById('mb1').className="metric"+(R.c>1?" crossed":"");
+  document.getElementById('m1s').textContent=R.c>1?"worse than saying nothing":"below the benchmark";
+  document.getElementById('m2').textContent=R.cal.toFixed(3);
+  document.getElementById('m3').textContent=R.mn.toFixed(2);
+  const m4=document.getElementById('m4');
+  m4.textContent=(R.strong*100).toFixed(1)+"%";
+  m4.className="v"+(R.strong>0.005?" warn":"");
+  draw1(R);drawDiag(R);
+}
+
+/* ================= panel 2 ================= */
+let gamma=0,evidenceDep=true;
+const ZM=0.5*(MU0+MU1),ZS=Math.sqrt(0.5*(SD0*SD0+SD1*SD1)),EPS=0.15;
+const uRef=uniforms(2*NREF,66),uTgt=uniforms(2*N,77);
+const zq0=normals(6000,88),zq1=normals(6000,99);
+const expit=v=>1/(1+Math.exp(-v));
+const icept={};
+function intercept(h,g){
+  const key=h+"|"+g.toFixed(2)+"|"+evidenceDep;
+  if(icept[key]!==undefined)return icept[key];
+  let a;
+  if(g===0||!evidenceDep)a=Math.log(EPS/(1-EPS));
+  else{const zq=h===0?zq0:zq1,mu=h===0?MU0:MU1,sv=h===0?SD0:SD1,sgn=h===0?1:-1;
+    const f=v=>{let s=0;for(let i=0;i<zq.length;i++){
+      const z=((mu+sv*zq[i])-ZM)/ZS;s+=expit(v+sgn*g*z);}return s/zq.length-EPS;};
+    let lo=-40,hi=40;for(let k=0;k<70;k++){const mid=(lo+hi)/2;f(mid)>0?hi=mid:lo=mid;}
+    a=(lo+hi)/2;}
+  icept[key]=a;return a;
+}
+function relabel(x,h,g,a,u,off){
+  const sgn=h===0?1:-1;
+  const p=evidenceDep?expit(a[h]+sgn*g*((x-ZM)/ZS)):EPS;
+  return u[off]<p?1-h:h;
+}
+function run2(g){
+  const a={0:intercept(0,g),1:intercept(1,g)};
+  const r0=[],r1=[];
+  for(let i=0;i<NREF;i++){const x=MU0+SD0*zr0[i];(relabel(x,0,g,a,uRef,i)===0?r0:r1).push(x);}
+  for(let i=0;i<NREF;i++){const x=MU1+SD1*zr1[i];(relabel(x,1,g,a,uRef,NREF+i)===0?r0:r1).push(x);}
+  if(r0.length<50||r1.length<50)return null;
+  const m0=mean(r0),s0=sd(r0,m0),m1=mean(r1),s1=sd(r1,m1);
+  const llr=new Float64Array(2*N),yT=new Uint8Array(2*N),yR=new Uint8Array(2*N);
+  for(let i=0;i<2*N;i++){const h=i<N?0:1;
+    const x=h===0?MU0+SD0*zt0[i]:MU1+SD1*zt1[i-N];
+    yT[i]=h;yR[i]=relabel(x,h,g,a,uTgt,i);
+    llr[i]=lnpdf(x,m1,s1)-lnpdf(x,m0,s0);}
+  let k=0;for(let i=0;i<2*N;i++)k+=yR[i];
+  if(k<50||k>2*N-50)return null;
+  return {app:cllr(llr,yR),tru:cllr(llr,yT),
+    sep:(m1-m0)/Math.sqrt(0.5*(s0*s0+s1*s1)),m0,s0,m1,s1};
+}
+let sweepCache={key:"",data:null};
+function sweep2(){
+  const key=String(evidenceDep);
+  if(sweepCache.key===key)return sweepCache.data;
+  const out=[];
+  for(let i=0;i<=40;i++){const gg=i*0.1;const r=run2(gg);if(r)out.push({g:gg,a:r.app,t:r.tru});}
+  sweepCache={key,data:out};return out;
+}
+function draw2(curve,cur){
+  const cv=document.getElementById('c2'),ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,L=98,Rr=24,T=28,B=92;
+  ctx.clearRect(0,0,W,H);
+  const px=g=>L+(g/4)*(W-L-Rr),py=v=>H-B-((v-0.2)/0.9)*(H-T-B);
+  axes(ctx,W,H,L,Rr,T,B);
+  ctx.fillStyle="#8A9196";ctx.font="34px ui-monospace,monospace";ctx.textAlign="center";
+  for(let g=0;g<=4;g++)ctx.fillText(String(g),px(g),H-46);
+  ctx.fillText("how strongly the label depends on concentration  γ",W/2,H-6);
+  ctx.textAlign="right";
+  for(let v=0.4;v<=1.0001;v+=0.2){ctx.fillText(v.toFixed(1),L-14,py(v)+12);
+    ctx.strokeStyle="#E6E9E4";ctx.beginPath();ctx.moveTo(L,py(v));ctx.lineTo(W-Rr,py(v));ctx.stroke();}
+  ctx.strokeStyle="#AAB1AB";ctx.lineWidth=3;ctx.setLineDash([10,8]);
+  ctx.beginPath();ctx.moveTo(L,py(1));ctx.lineTo(W-Rr,py(1));ctx.stroke();ctx.setLineDash([]);
+  ctx.textAlign="left";ctx.fillText("neutral system",L+14,py(1)-16);
+  const line=(k,col)=>{ctx.strokeStyle=col;ctx.lineWidth=6;ctx.beginPath();
+    curve.forEach((d,i)=>{i?ctx.lineTo(px(d.g),py(d[k])):ctx.moveTo(px(d.g),py(d[k]));});ctx.stroke();};
+  line('a',"#9C7328");line('t',"#8C3733");
+  ctx.strokeStyle="#1B2225";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(px(gamma),T);ctx.lineTo(px(gamma),H-B);ctx.stroke();
+  ctx.fillStyle="#9C7328";ctx.beginPath();ctx.arc(px(gamma),py(cur.app),11,0,7);ctx.fill();
+  ctx.fillStyle="#8C3733";ctx.beginPath();ctx.arc(px(gamma),py(cur.tru),11,0,7);ctx.fill();
+}
+function draw3(R){
+  const cv=document.getElementById('c3'),ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,L=54,Rr=18,T=28,B=92;
+  ctx.clearRect(0,0,W,H);
+  const x0=-2.2,x1=4.2,px=x=>L+(x-x0)/(x1-x0)*(W-L-Rr);
+  const f=(x,m,s)=>Math.exp(lnpdf(x,m,s));
+  let ymax=0;for(let i=0;i<=400;i++){const x=x0+(x1-x0)*i/400;
+    ymax=Math.max(ymax,f(x,MU0,SD0),f(x,MU1,SD1),f(x,R.m0,R.s0),f(x,R.m1,R.s1));}
+  ymax*=1.1;const py=v=>H-B-(v/ymax)*(H-T-B);
+  ctx.strokeStyle="#D3D8D1";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(L,H-B);ctx.lineTo(W-Rr,H-B);ctx.stroke();
+  ctx.fillStyle="#8A9196";ctx.font="34px ui-monospace,monospace";ctx.textAlign="center";
+  for(let t=-2;t<=4;t++)ctx.fillText(String(t),px(t),H-46);
+  ctx.fillText("log-concentration",W/2,H-6);
+  const curve=(m,s,col,w)=>{ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();
+    for(let i=0;i<=400;i++){const x=x0+(x1-x0)*i/400;const v=f(x,m,s);
+      i?ctx.lineTo(px(x),py(v)):ctx.moveTo(px(x),py(v));}ctx.stroke();};
+  curve(MU0,SD0,"#D3D8D1",5);curve(MU1,SD1,"#D3D8D1",5);
+  curve(R.m0,R.s0,"#9C7328",6);curve(R.m1,R.s1,"#9C7328",6);
+}
+function upd2(){
+  const R=run2(gamma);if(!R)return;
+  document.getElementById('gv').textContent="γ = "+gamma.toFixed(1);
+  document.getElementById('n1').textContent=R.app.toFixed(2);
+  document.getElementById('n2').textContent=R.tru.toFixed(2);
+  const d=R.tru-R.app,n3=document.getElementById('n3');
+  n3.textContent=(d>=0?"+":"−")+Math.abs(d).toFixed(2);
+  n3.className="v"+(d>0.02?" warn":"");
+  document.getElementById('nb3').className="metric"+(d>0.02?" crossed":"");
+  document.getElementById('n4').textContent=R.sep.toFixed(2)+" / "+TRUE_SEP.toFixed(2);
+  draw2(sweep2(),R);draw3(R);
+}
+
+/* ================= panel 3 ================= */
+let ratio=1.0;
+const NF=6000;
+const zf0=normals(NF,111),zf1=normals(NF,222),zfu=normals(2*NF,333);
+function run3(r){
+  const s0=SP*Math.sqrt(2/(1+r*r)),s1=r*s0;
+  const mt=SP,st=SP;
+  const llr=new Float64Array(2*NF),y=new Uint8Array(2*NF);
+  for(let i=0;i<2*NF;i++){
+    const h=i<NF?0:1;
+    const base=h===0?MU0+s0*zf0[i]:MU1+s1*zf1[i-NF];
+    const x=base+mt+st*zfu[i];
+    y[i]=h;llr[i]=lnpdf(x,MU1,s1)-lnpdf(x,MU0,s0);}
+  let w0=0,sh=0,sl=0,n0=0,n1=0;
+  for(let i=0;i<2*NF;i++){
+    if(y[i]===0){n0++;if(llr[i]>0)w0++;if(llr[i]>Math.log(100))sh++;}
+    else{n1++;if(llr[i]<-Math.log(100))sl++;}}
+  const c=cllr(llr,y),P=pav(llr,y);
+  return {wrong0:w0/n0,strong0:sh/n0,strong1:sl/n1,cal:c-P.cmin,mn:P.cmin,c};
+}
+let f3=null;
+function sweep3(){if(f3)return f3;f3=[];
+  for(let i=0;i<=30;i++){const r=0.6+i*0.04;f3.push({r,...run3(r)});}return f3;}
+function drawFrag(id,series,ymaxFix,fmt){
+  const cv=document.getElementById(id),ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height,L=110,Rr=24,T=28,B=92;
+  ctx.clearRect(0,0,W,H);
+  const px=r=>L+(r-0.6)/1.2*(W-L-Rr),py=v=>H-B-(v/ymaxFix)*(H-T-B);
+  axes(ctx,W,H,L,Rr,T,B);
+  ctx.fillStyle="#8A9196";ctx.font="34px ui-monospace,monospace";ctx.textAlign="center";
+  for(const r of [0.6,1.0,1.4,1.8])ctx.fillText(r.toFixed(1),px(r),H-46);
+  ctx.fillText("variance ratio  σ₁ / σ₀",W/2,H-6);
+  ctx.textAlign="right";
+  for(let k=0;k<=4;k++){const v=ymaxFix*k/4;
+    ctx.fillText(fmt(v),L-14,py(v)+12);
+    ctx.strokeStyle="#E6E9E4";ctx.beginPath();ctx.moveTo(L,py(v));ctx.lineTo(W-Rr,py(v));ctx.stroke();}
+  ctx.strokeStyle="#E6E9E4";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(px(1),T);ctx.lineTo(px(1),H-B);ctx.stroke();
+  const data=sweep3();
+  for(const s of series){ctx.strokeStyle=s.col;ctx.lineWidth=6;ctx.beginPath();
+    data.forEach((d,i)=>{const v=Math.min(s.get(d),ymaxFix);
+      i?ctx.lineTo(px(d.r),py(v)):ctx.moveTo(px(d.r),py(v));});ctx.stroke();}
+  ctx.strokeStyle="#1B2225";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(px(ratio),T);ctx.lineTo(px(ratio),H-B);ctx.stroke();
+  const cur=run3(ratio);
+  for(const s of series){ctx.fillStyle=s.col;ctx.beginPath();
+    ctx.arc(px(ratio),py(Math.min(s.get(cur),ymaxFix)),11,0,7);ctx.fill();}
+}
+function upd3(){
+  const R=run3(ratio);
+  document.getElementById('rv').textContent=ratio.toFixed(2);
+  document.getElementById('q1').textContent=(R.wrong0*100).toFixed(0)+"%";
+  document.getElementById('q2').textContent=R.cal.toFixed(2);
+  const q3=document.getElementById('q3'),q4=document.getElementById('q4');
+  q3.textContent=(R.strong0*100).toFixed(1)+"%";
+  q4.textContent=(R.strong1*100).toFixed(1)+"%";
+  q3.className="v"+(R.strong0>0.02?" warn":"");
+  q4.className="v"+(R.strong1>0.02?" warn":"");
+  drawFrag('c4',[{col:"#5C666A",get:d=>d.wrong0},{col:"#33685C",get:d=>d.mn}],
+    1,v=>(v*100).toFixed(0)+"%");
+  drawFrag('c5',[{col:"#8C3733",get:d=>d.strong0},{col:"#9C7328",get:d=>d.strong1}],
+    0.2,v=>(v*100).toFixed(0)+"%");
+}
+
+/* ================= narrative beats ================= */
+const BEATS={
+ 1:[{s:{d:0,c:false},t:"The case comes from the reference condition. The reported figure is correct: it sits on the diagonal."},
+    {s:{d:0.5,c:false},t:"The specimen may have come from cardiac blood. The laboratory measurement is unchanged, the reported LR is unchanged — but the weight it deserves has fallen."},
+    {s:{d:1,c:false},t:"C_llr has crossed the neutral benchmark. The system would now serve the court better by saying nothing. Look at discrimination: almost unchanged."},
+    {s:{d:1,c:true},t:"Carrying the uncertainty into the model returns calibration to the diagonal — but not to its starting value. The shift destroyed real information; the correction cannot recover it, only account for it honestly."},
+    {s:{d:-1,c:false},t:"Reverse the shift and the error reverses with it. This time the system inflates in favour of the defence."}],
+ 2:[{s:{g:0,e:true},t:"There is label error — 15% — but it is independent of concentration. The system looks worse than it is. That is the expected result."},
+    {s:{g:1,e:true},t:"As the dependence grows the two lines converge. The model has begun to learn a separation that is not there."},
+    {s:{g:2,e:true},t:"The sign has flipped. The system now looks better against the recorded labels than it truly is."},
+    {s:{g:4,e:true},t:"Apparently a strong evidential system. In truth barely below neutral. A validation study cannot see this gap."},
+    {s:{g:4,e:false},t:"The same amount of error, the same class-conditional rate — but distributed at random. The illusion vanishes entirely. The problem is not the amount of error; it is that it is related to the evidence."}],
+ 3:[{s:{r:1.0},t:"Variance ratio of 1. Strong misleading evidence is 2.5% on the prosecution side and near zero on the defence side."},
+    {s:{r:1.8},t:"When the death group is the wider one, strong false evidence on the prosecution side jumps to 15%."},
+    {s:{r:0.6},t:"Reverse it: strong false evidence switches sides entirely, moving to the defence."},
+    {s:{r:1.0},t:"The two lines on the left barely moved throughout. Order information is robust, weight information is fragile — the panel 1 finding, repeated on a completely different axis."}]
+};
+let panel=1,beatIx=-1;
+function setBeat(i){
+  const list=BEATS[panel]||[];
+  const el=document.getElementById('beat');
+  if(i<0||i>=list.length){beatIx=-1;el.className="beat idle";
+    document.getElementById('beatNo').textContent="SERBEST";
+    document.getElementById('beatTxt').textContent="Drag the control yourself, or press space to step through the narrative.";
+    return;}
+  beatIx=i;const b=list[i];el.className="beat";
+  document.getElementById('beatNo').textContent=(i+1)+" / "+list.length;
+  document.getElementById('beatTxt').textContent=b.t;
+  if(panel===4)return;
+  if(panel===1){delta=b.s.d;useCorr=b.s.c;
+    document.getElementById('d').value=delta;
+    document.getElementById('corr').setAttribute('aria-pressed',useCorr);upd1();}
+  if(panel===2){gamma=b.s.g;evidenceDep=b.s.e;
+    document.getElementById('g').value=gamma;
+    document.getElementById('armD').setAttribute('aria-pressed',evidenceDep);
+    document.getElementById('armN').setAttribute('aria-pressed',!evidenceDep);upd2();}
+  if(panel===3){ratio=b.s.r;document.getElementById('r').value=ratio;upd3();}
+}
+
+
+/* ================= panel 4: design explorer ================= */
+const KNOBS=[
+ {t:"Shift magnitude",
+  cols:["δ","total","order share","weight share"],
+  note:"As the shift grows, the weight share explodes while the order share barely moves. The whole finding lies in those two columns moving at different speeds.",
+  run(){const d0=delta,c0=useCorr;useCorr=false;const out=[];
+    for(const v of [0,0.5,1.0]){delta=v;const r=run1();
+      out.push([(v>=0?"+":"")+v.toFixed(2),r.c.toFixed(3),r.mn.toFixed(3),r.cal.toFixed(3)]);}
+    delta=d0;useCorr=c0;return {rows:out,mark:[1,3]};}},
+
+ {t:"Is the correction applied",
+  cols:["state","total","order share","weight share"],
+  note:"The correction repairs the weight share almost entirely but cannot restore the order share. The shift destroyed real information; the correction accounts for that honestly.",
+  run(){const d0=delta,c0=useCorr;delta=1.0;const out=[];
+    for(const [lab,cc] of [["no",false],["yes",true]]){useCorr=cc;const r=run1();
+      out.push([lab,r.c.toFixed(3),r.mn.toFixed(3),r.cal.toFixed(3)]);}
+    delta=d0;useCorr=c0;return {rows:out,mark:[1,3]};}},
+
+ {t:"Shape of the reference distributions",
+  cols:["σ₁/σ₀","total","weight share","LR>100 | H₀"],
+  note:"The shift is held constant; only the shape of the distributions changes. The weight share swings seven-fold, the tail rate twenty-five-fold. This is why tail figures are presented as stress-test results.",
+  run(){const out=[];
+    for(const r of [0.6,1.0,1.8]){const q=run3(r);
+      out.push([r.toFixed(1),q.c.toFixed(3),q.cal.toFixed(3),(q.strong0*100).toFixed(1)+"%"]);}
+    return {rows:out,mark:[2,3]};}},
+
+ {t:"Reference labels",
+  cols:["γ","apparent","true","difference"],
+  note:"The amount of label error is identical in every row (15%). The only thing that changes is whether the error depends on concentration. Once the difference turns positive, the system starts to look better than it is.",
+  run(){const g0=gamma,e0=evidenceDep;evidenceDep=true;const out=[];
+    for(const g of [0,2,4]){const r=run2(g);const d=r.tru-r.app;
+      out.push([g.toFixed(1),r.app.toFixed(3),r.tru.toFixed(3),(d>=0?"+":"−")+Math.abs(d).toFixed(3)]);}
+    gamma=g0;evidenceDep=e0;return {rows:out,mark:[3]};}}
+];
+let activeKnob=0;
+function renderKnob(){
+  const K=KNOBS[activeKnob],R=K.run();
+  document.getElementById('knobTitle').textContent=K.t;
+  let h='<table class="rtab"><thead><tr>'+K.cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
+  R.rows.forEach((row,ri)=>{
+    h+='<tr>'+row.map((cell,ci)=>{
+      let cls='';
+      if(R.mark.includes(ci)&&ri===R.rows.length-1)cls=' class="hi"';
+      if(R.mark.includes(ci)&&ri===0)cls=' class="lo"';
+      return '<td'+cls+'>'+cell+'</td>';}).join('')+'</tr>';});
+  h+='</tbody></table>';
+  document.getElementById('knobBody').innerHTML=h;
+  document.getElementById('knobNote').textContent=K.note;
+  document.querySelectorAll('#pipe .knob').forEach(el=>
+    el.setAttribute('aria-pressed', +el.dataset.k===activeKnob));
+}
+document.querySelectorAll('#pipe .knob').forEach(el=>{
+  const pick=()=>{activeKnob=+el.dataset.k;renderKnob();};
+  el.addEventListener('click',pick);
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick();}});
+});
+
+/* ================= wiring ================= */
+function show(p){panel=p;
+  [1,2,3,4].forEach(i=>{document.getElementById('t'+i).setAttribute('aria-selected',i===p);
+    document.getElementById('p'+i).hidden=i!==p;});
+  document.getElementById('beat').style.display = p===4 ? 'none' : '';
+  setBeat(-1);({1:upd1,2:upd2,3:upd3,4:renderKnob})[p]();}
+[1,2,3,4].forEach(i=>document.getElementById('t'+i).addEventListener('click',()=>show(i)));
+
+document.getElementById('d').addEventListener('input',e=>{delta=+e.target.value;setBeat(-1);upd1();});
+document.getElementById('corr').addEventListener('click',e=>{
+  useCorr=!useCorr;e.target.setAttribute('aria-pressed',useCorr);upd1();});
+document.getElementById('g').addEventListener('input',e=>{gamma=+e.target.value;setBeat(-1);upd2();});
+document.getElementById('armD').addEventListener('click',()=>{evidenceDep=true;
+  document.getElementById('armD').setAttribute('aria-pressed','true');
+  document.getElementById('armN').setAttribute('aria-pressed','false');upd2();});
+document.getElementById('armN').addEventListener('click',()=>{evidenceDep=false;
+  document.getElementById('armN').setAttribute('aria-pressed','true');
+  document.getElementById('armD').setAttribute('aria-pressed','false');upd2();});
+document.getElementById('r').addEventListener('input',e=>{ratio=+e.target.value;setBeat(-1);upd3();});
+
+function nudge(dir){
+  if(panel===4)return;
+  if(panel===1){delta=Math.max(-1.5,Math.min(1.5,+(delta+dir*0.05).toFixed(2)));
+    document.getElementById('d').value=delta;setBeat(-1);upd1();}
+  else if(panel===2){gamma=Math.max(0,Math.min(4,+(gamma+dir*0.1).toFixed(1)));
+    document.getElementById('g').value=gamma;setBeat(-1);upd2();}
+  else{ratio=Math.max(0.6,Math.min(1.8,+(ratio+dir*0.02).toFixed(2)));
+    document.getElementById('r').value=ratio;setBeat(-1);upd3();}
+}
+function toggleArm(){
+  if(panel===1)document.getElementById('corr').click();
+  else if(panel===2)(evidenceDep?document.getElementById('armN'):document.getElementById('armD')).click();
+}
+function reset(){
+  delta=0;useCorr=false;gamma=0;evidenceDep=true;ratio=1;
+  document.getElementById('d').value=0;document.getElementById('g').value=0;
+  document.getElementById('r').value=1;
+  document.getElementById('corr').setAttribute('aria-pressed','false');
+  document.getElementById('armD').setAttribute('aria-pressed','true');
+  document.getElementById('armN').setAttribute('aria-pressed','false');
+  setBeat(-1);upd1();upd2();upd3();
+}
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'&&e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;
+  const k=e.key;
+  if(k==='ArrowRight'){e.preventDefault();nudge(1);}
+  else if(k==='ArrowLeft'){e.preventDefault();nudge(-1);}
+  else if(k===' '){e.preventDefault();setBeat(Math.min(beatIx+1,(BEATS[panel]||[]).length-1));}
+  else if(k==='Backspace'){e.preventDefault();setBeat(beatIx-1);}
+  else if(k==='c'||k==='C'){toggleArm();}
+  else if(k==='1'||k==='2'||k==='3'||k==='4'){show(+k);}
+  else if(k==='p'||k==='P'){document.body.classList.toggle('pres');
+    document.getElementById('modeflag').textContent=
+      "presentation mode: "+(document.body.classList.contains('pres')?"on":"off")+" — P";}
+  else if(k==='r'||k==='R'){reset();}
+});
+
+upd1();upd2();upd3();renderKnob();
+</script>
+</body>
+</html>
